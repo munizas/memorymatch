@@ -1,6 +1,9 @@
 package game
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
+)
 
 const (
 	ScreenWidth  = 420
@@ -24,6 +27,9 @@ func NewGame() (*Game, error) {
 }
 
 func (g Game) Update() error {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		g.board.Update(ebiten.CursorPosition())
+	}
 	return nil
 }
 

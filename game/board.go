@@ -32,15 +32,18 @@ func (b Board) Size() (int, int) {
 	return x, y
 }
 
-func (b Board) Update() error {
-	return nil
+func (b Board) Update(x, y int) {
+	for _, c := range b.cards {
+		if c.IsClicked(x, y) {
+			c.showing = true
+		}
+	}
 }
 
 func (b Board) Draw(boardImage *ebiten.Image) {
 	boardImage.Fill(frameColor)
 	for j := 0; j < b.size; j++ {
 		for i := 0; i < b.size; i++ {
-			// v := 0
 			op := &ebiten.DrawImageOptions{}
 			x := i*cardSize + (i+1)*cardMargin
 			y := j*cardSize + (j+1)*cardMargin

@@ -146,3 +146,13 @@ func (c Card) Draw(boardImage *ebiten.Image) {
 	y = y + (cardSize-h)/2 + h
 	text.Draw(boardImage, str, f, x, y, cardColor(v))
 }
+
+func (c Card) IsClicked(x, y int) bool {
+	dx := c.x*cardSize + (c.x+1)*cardMargin + 40 + cardSize
+	dy := c.y*cardSize + (c.y+1)*cardMargin + 140 + cardSize
+
+	if (x > dx-cardSize && x < dx) && (y > dy-cardSize && y < dy) {
+		return true
+	}
+	return false
+}
