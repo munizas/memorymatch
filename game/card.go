@@ -20,6 +20,7 @@ const (
 )
 
 var (
+	mplusMiniFont   font.Face
 	mplusSmallFont  font.Face
 	mplusNormalFont font.Face
 	mplusBigFont    font.Face
@@ -36,6 +37,15 @@ func init() {
 	}
 
 	const dpi = 72
+	mplusMiniFont, err = opentype.NewFace(tt, &opentype.FaceOptions{
+		Size:    12,
+		DPI:     dpi,
+		Hinting: font.HintingFull,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	mplusSmallFont, err = opentype.NewFace(tt, &opentype.FaceOptions{
 		Size:    24,
 		DPI:     dpi,
@@ -93,7 +103,7 @@ func newCardDeck(size int) ([]*Card, error) {
 	rand.Seed(time.Now().Unix())
 	var numbers []int
 	for i := 0; i < size*size/2; i++ {
-		num := 1 + rand.Intn(10)
+		num := 1 + rand.Intn(20)
 		numbers = append(numbers, num)
 		numbers = append(numbers, num)
 	}
@@ -148,8 +158,8 @@ func (c Card) Draw(boardImage *ebiten.Image) {
 }
 
 func (c Card) IsClicked(x, y int) bool {
-	dx := c.x*cardSize + (c.x+1)*cardMargin + 40 + cardSize
-	dy := c.y*cardSize + (c.y+1)*cardMargin + 140 + cardSize
+	dx := c.x*cardSize + (c.x+1)*cardMargin + xOffset + cardSize
+	dy := c.y*cardSize + (c.y+1)*cardMargin + yOffset + cardSize
 
 	if (x > dx-cardSize && x < dx) && (y > dy-cardSize && y < dy) {
 		return true

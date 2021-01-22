@@ -6,6 +6,11 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+var (
+	firstCard  *Card
+	secondCard *Card
+)
+
 type Board struct {
 	cards []*Card
 	size  int
@@ -32,12 +37,13 @@ func (b Board) Size() (int, int) {
 	return x, y
 }
 
-func (b Board) Update(x, y int) {
-	for _, c := range b.cards {
-		if c.IsClicked(x, y) {
-			c.showing = true
+func cardClicked(x int, y int, cards []*Card) *Card {
+	for _, c := range cards {
+		if !c.showing && c.IsClicked(x, y) {
+			return c
 		}
 	}
+	return nil
 }
 
 func (b Board) Draw(boardImage *ebiten.Image) {
