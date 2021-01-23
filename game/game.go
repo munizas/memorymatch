@@ -16,11 +16,14 @@ const (
 	boardSize    = 4
 	xOffset      = (ScreenWidth - (boardSize*cardSize + (boardSize+1)*cardMargin)) / 2
 	yOffset      = (ScreenHeight - (boardSize*cardSize + (boardSize+1)*cardMargin)) / 2
+	NormalGame   = 0
+	HardGame     = 1
 )
 
 var (
-	matchAttempts int
-	gameMessage   string
+	matchAttempts   int
+	gameMessage     string
+	gameModeMessage string
 )
 
 type GameState int
@@ -36,10 +39,12 @@ type Game struct {
 	state      GameState
 	board      *Board
 	boardImage *ebiten.Image
+	mode       int
 }
 
 func NewGame() (*Game, error) {
-	g := &Game{state: FirstSelection}
+	g := &Game{state: FirstSelection, mode: NormalGame}
+	gameModeMessage = "Normal"
 	var err error
 	g.board, err = NewBoard(boardSize)
 	if err != nil {
@@ -48,10 +53,16 @@ func NewGame() (*Game, error) {
 	return g, nil
 }
 
-func (g *Game) resetGame() error {
+func (g *Game) resetGame(gameMode int) error {
 	g.state = FirstSelection
+	g.mode = gameMode
 	matchAttempts = 0
 	gameMessage = ""
+	if gameMode == HardGame {
+		gameModeMessage = "Hard"
+	} else {
+		gameModeMessage = "Normal"
+	}
 	var err error
 	g.board, err = NewBoard(boardSize)
 	if err != nil {
@@ -62,7 +73,11 @@ func (g *Game) resetGame() error {
 
 func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyN) {
-		if err := g.resetGame(); err != nil {
+		if err := g.resetGame(NormalGame); err != nil {
+			panic(err)
+		}
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+		if err := g.resetGame(HardGame); err != nil {
 			panic(err)
 		}
 	}
@@ -87,11 +102,10 @@ func (g *Game) Update() error {
 			}
 		}
 	case CheckMatch:
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(300 * time.Millisecond)
 		matchAttempts++
 		if firstCard.value != secondCard.value {
-			firstCard.showing = false
-			secondCard.showing = false
+			g.resetCards()
 		}
 		if isGameFinished(g.board) {
 			g.state = Finished
@@ -102,6 +116,17 @@ func (g *Game) Update() error {
 		gameMessage = "Nice! You did it!"
 	}
 	return nil
+}
+
+func (g *Game) resetCards() {
+	if g.mode == NormalGame {
+		firstCard.showing = false
+		secondCard.showing = false
+	} else {
+		for _, c := range g.board.cards {
+			c.showing = false
+		}
+	}
 }
 
 func isGameFinished(board *Board) bool {
@@ -132,7 +157,9 @@ func (g Game) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(float64(x), float64(y))
 	screen.DrawImage(g.boardImage, op)
 
+	text.Draw(screen, fmt.Sprintf("Game Mode: %v", gameModeMessage), mplusMiniFont, xOffset, yOffset-10, color.RGBA{0x77, 0x6e, 0x65, 0xff})
 	text.Draw(screen, fmt.Sprintf("Match Attempts: %d", matchAttempts), mplusSmallFont, xOffset, sh-xOffset*2, color.RGBA{0x77, 0x6e, 0x65, 0xff})
 	text.Draw(screen, fmt.Sprintf("Press N for new game"), mplusMiniFont, xOffset, sh-xOffset, color.RGBA{0x77, 0x6e, 0x65, 0xff})
+	text.Draw(screen, fmt.Sprintf("Press H for hard mode game"), mplusMiniFont, xOffset, sh-xOffset/2, color.RGBA{0x77, 0x6e, 0x65, 0xff})
 	text.Draw(screen, gameMessage, mplusNormalFont, xOffset, xOffset*2, color.RGBA{0x77, 0x6e, 0x65, 0xff})
 }
