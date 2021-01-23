@@ -101,11 +101,20 @@ func colorToScale(clr color.Color) (float64, float64, float64, float64) {
 
 func newCardDeck(size int) ([]*Card, error) {
 	rand.Seed(time.Now().Unix())
+	numberSet := make(map[int]bool)
 	var numbers []int
-	for i := 0; i < size*size/2; i++ {
+
+	for len(numberSet) != size*size/2 {
 		num := 1 + rand.Intn(20)
-		numbers = append(numbers, num)
-		numbers = append(numbers, num)
+		if _, ok := numberSet[num]; ok {
+			continue
+		}
+		numberSet[num] = true
+	}
+
+	for k, _ := range numberSet {
+		numbers = append(numbers, k)
+		numbers = append(numbers, k)
 	}
 	rand.Shuffle(len(numbers), func(i, j int) { numbers[i], numbers[j] = numbers[j], numbers[i] })
 
